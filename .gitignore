@@ -1,2 +1,5 @@
 node_modules
-node_modules
+golf-platform/node_modules
+golf-platform/.next
+golf-platform/.env*
+.env*
