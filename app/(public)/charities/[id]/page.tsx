@@ -9,13 +9,14 @@ interface Event {
   location: string;
 }
 
-export default async function CharityDetailPage({ params }: { params: { id: string } }) {
+export default async function CharityDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = await createServerClient();
   
   const { data: charity, error } = await supabase
     .from('charities')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (error || !charity) {

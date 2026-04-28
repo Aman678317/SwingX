@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 
 // Admin only: update charity
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = createServerClient();
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -28,6 +28,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
+    const { id } = await params;
     const { data: charity, error } = await supabase
       .from('charities')
       .update({
@@ -37,7 +38,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         is_featured,
         upcoming_events
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -50,7 +51,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // Admin only: delete charity
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = createServerClient();
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -69,10 +70,11 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   }
 
   try {
+    const { id } = await params;
     const { error } = await supabase
       .from('charities')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (error) throw error;
 

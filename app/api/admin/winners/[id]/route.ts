@@ -7,7 +7,7 @@ import { sendWinnerApprovedEmail } from '@/lib/email';
  * Update a verification record (status, payout_status, admin_notes).
  * Expected JSON body: { status?: string, payout_status?: string, admin_notes?: string }
  */
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = createServerClient();
 
   // Auth & admin check
@@ -32,7 +32,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 
   const { status, payout_status, admin_notes } = payload;
-  const id = params.id;
+  const { id } = await params;
 
   const updates: any = {};
   if (status) updates.status = status;

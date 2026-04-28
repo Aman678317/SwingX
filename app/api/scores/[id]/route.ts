@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = createServerClient();
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -9,10 +9,11 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
   }
 
+  const { id } = await params;
   const { error } = await supabase
     .from('scores')
     .delete()
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('user_id', session.user.id);
 
   if (error) {
@@ -22,7 +23,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   return NextResponse.json({ success: true });
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = createServerClient();
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -39,13 +40,14 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       return NextResponse.json({ error: 'Invalid score or date' }, { status: 400 });
     }
 
+    const { id } = await params;
     // Check unique constraint for the new date, excluding the current score
     const { data: existingDateScore } = await supabase
       .from('scores')
       .select('id')
       .eq('user_id', session.user.id)
       .eq('score_date', score_date)
-      .neq('id', params.id)
+      .neq('id', id)
       .single();
 
     if (existingDateScore) {
@@ -55,7 +57,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const { error: updateError } = await supabase
       .from('scores')
       .update({ score, score_date })
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', session.user.id);
 
     if (updateError) throw updateError;

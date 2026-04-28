@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = createServerClient();
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -21,7 +21,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   }
 
   try {
-    const drawId = params.id;
+    const { id: drawId } = await params;
 
     // Get the draw
     const { data: draw, error: drawError } = await supabase
